@@ -250,4 +250,6 @@ document.getElementById('btn-simular-externa').addEventListener('click', () => {
 window.addEventListener('resize', () => { if(window.innerWidth > 768) { document.querySelector('.sidebar-wrapper').classList.remove('hide-mobile'); document.getElementById('btn-back-mobile').style.display = 'none'; } else { document.getElementById('btn-back-mobile').style.display = 'block'; } });
 function voltarParaLista() { document.querySelector('.sidebar-wrapper').classList.remove('hide-mobile'); }
 
+btnActionMain.onclick = iniciarGravacao;
+
 carregarDados(); atualizarMeuPerfilUI(); abrirConversa(activeChatId);
