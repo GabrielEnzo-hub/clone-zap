@@ -7,23 +7,25 @@ const SVG_SINGLE_TICK = `<svg viewBox="0 0 16 15" width="16" height="15"><path f
 const SVG_DOUBLE_TICK = `<svg viewBox="0 0 16 15" width="16" height="15"><path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.318.318 0 0 0 .036.408l1.51 1.369c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"></path><path fill="currentColor" d="M9.663 3.116l-.478-.372a.365.365 0 0 0-.51.063L3.319 9.679a.32.32 0 0 1-.484.033L.645 7.569a.366.366 0 0 0-.515.006L.2 8.008a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"></path></svg>`;
 
 // =========================================================
-// 1. DADOS (V12)
+// 1. DADOS (V13 - Com suporte a duração do áudio)
 // =========================================================
 let chatsData = {}; let myProfile = {}; let activeChatId = "chat_maria"; 
+
 function carregarDados() {
-  const dadosSalvos = localStorage.getItem('whatsapp_clone_data_v12'); 
+  const dadosSalvos = localStorage.getItem('whatsapp_clone_data_v13'); 
   if (dadosSalvos) {
     const dataObj = JSON.parse(dadosSalvos); chatsData = dataObj.chats; myProfile = dataObj.profile;
   } else {
     chatsData = {
-      "chat_maria": { name: "Maria Silva", phone: "+55 11 98765-4321", recado: "Ocupada", avatar: "M", color: "#00a884", archived: false, messages: [{ id: Date.now()-1000, text: "Olá! Viu o projeto?", time: "14:02", type: "received", isImage: false, isVideo: false, isAudio: false, deleted: false }] },
-      "chat_joao": { name: "João Pedro", phone: "+55 21 91234-5678", recado: "No trabalho.", avatar: "J", color: "#53bdeb", archived: false, messages: [{ id: Date.now(), text: "Ficou muito show!", time: "09:30", type: "received", isImage: false, isVideo: false, isAudio: false, deleted: false }] }
+      "chat_maria": { name: "Maria Silva", phone: "+55 11 98765-4321", recado: "Ocupada", avatar: "M", color: "#00a884", archived: false, messages: [{ id: Date.now()-1000, text: "Olá! Viu o projeto?", time: "14:02", type: "received", isImage: false, isVideo: false, isAudio: false, deleted: false, audioDuration: 0 }] },
+      "chat_joao": { name: "João Pedro", phone: "+55 21 91234-5678", recado: "No trabalho.", avatar: "J", color: "#53bdeb", archived: false, messages: [{ id: Date.now(), text: "Ficou muito show!", time: "09:30", type: "received", isImage: false, isVideo: false, isAudio: false, deleted: false, audioDuration: 0 }] }
     };
     myProfile = { name: "Administrador", bio: "Disponível", avatar: null, theme: "dark" }; salvarDados();
   }
   mudarTema(myProfile.theme || 'dark');
 }
-function salvarDados() { localStorage.setItem('whatsapp_clone_data_v12', JSON.stringify({ chats: chatsData, profile: myProfile })); }
+function salvarDados() { localStorage.setItem('whatsapp_clone_data_v13', JSON.stringify({ chats: chatsData, profile: myProfile })); }
+
 function abrirModalTema() { document.getElementById("theme-modal").style.display = "flex"; setTimeout(() => document.getElementById("theme-modal").classList.add("show"), 10); }
 function fecharModalTema() { document.getElementById("theme-modal").classList.remove("show"); setTimeout(() => document.getElementById("theme-modal").style.display = "none", 300); }
 function mudarTema(themeName) { document.body.className = `theme-${themeName}`; myProfile.theme = themeName; salvarDados(); }
@@ -92,11 +94,32 @@ function abrirConversa(chatId) {
     
     if (msg.isImage) { contentHTML = `<img src="${msg.text}" class="chat-media" alt="Imagem" onclick="abrirModalMedia('${msg.text}', 'image')"> <div class="message-time-block"><span class="time">${msg.time}</span>${tickHTML}</div>`; divMsg.classList.add('media-message'); } 
     else if (msg.isVideo) { contentHTML = `<video src="${msg.text}" class="chat-media" onclick="abrirModalMedia('${msg.text}', 'video')"></video> <div class="video-overlay-icon">▶</div><div class="message-time-block"><span class="time">${msg.time}</span>${tickHTML}</div>`; divMsg.classList.add('media-message'); } 
-    else if (msg.isAudio) { divMsg.classList.add('audio-message'); contentHTML = `<div class="custom-audio-player"><audio src="${msg.text}" class="hidden-audio" preload="metadata"></audio><div class="audio-avatar">${avatarPlayer}</div><div class="audio-controls-wrapper"><div class="audio-top-row"><button class="play-btn" onclick="playCustomAudio(this)">▶</button><div class="audio-progress"><div class="audio-progress-bar"></div><input type="range" class="audio-seek-slider" min="0" max="100" value="0" step="0.1" oninput="arrastarAudio(this)" onchange="arrastarAudio(this)"></div></div><div class="audio-bottom-row"><span class="audio-timer-display" data-duration="0">00:00</span><div class="message-time-block"><span class="time" style="margin:0;">${msg.time}</span>${tickHTML}</div></div></div></div>`; } 
-    else { contentHTML = `<span class="text">${msg.text}</span><div class="message-time-block"><span class="time">${msg.time}</span>${tickHTML}</div>`; }
+    else if (msg.isAudio) { 
+      divMsg.classList.add('audio-message'); 
+      const duracao = msg.audioDuration || 0;
+      const displayTempoInicial = formatarSegundosParaTempo(duracao);
+      contentHTML = `
+        <div class="custom-audio-player">
+          <audio src="${msg.text}" class="hidden-audio" preload="metadata"></audio>
+          <div class="audio-avatar">${avatarPlayer}</div>
+          <div class="audio-controls-wrapper">
+             <div class="audio-top-row">
+                <button class="play-btn" onclick="playCustomAudio(this)">▶</button>
+                <div class="audio-progress">
+                   <div class="audio-progress-bar"></div>
+                   <input type="range" class="audio-seek-slider" min="0" max="100" value="0" step="0.1" oninput="arrastarAudio(this)" onchange="arrastarAudio(this)">
+                </div>
+             </div>
+             <div class="audio-bottom-row">
+                <!-- AQUI ESTÁ A CORREÇÃO: injetamos a duração real na tag -->
+                <span class="audio-timer-display" data-duration="${duracao}">${displayTempoInicial}</span>
+                <div class="message-time-block"><span class="time" style="margin:0;">${msg.time}</span>${tickHTML}</div>
+             </div>
+          </div>
+        </div>`; 
+    } else { contentHTML = `<span class="text">${msg.text}</span><div class="message-time-block"><span class="time">${msg.time}</span>${tickHTML}</div>`; }
     divMsg.innerHTML = `${contentHTML}<button class="msg-options-btn" onclick="event.stopPropagation(); toggleMenu(event, 'menu-${msg.id}')">▼</button><div id="menu-${msg.id}" class="msg-dropdown"><div class="msg-dropdown-item" onclick="event.stopPropagation(); solicitarApagarUm(${msg.id})">Apagar Mensagem</div><div class="msg-dropdown-item" onclick="event.stopPropagation(); entrarModoSelecao(${msg.id})">Selecionar Mensagem</div></div>`;
     divMsg.addEventListener('click', (e) => { if (isSelectionMode) { e.preventDefault(); e.stopPropagation(); toggleMensagemSelecionada(msg.id, divMsg); } }); chatWindow.appendChild(divMsg);
-    if (msg.isAudio) { const audioTag = divMsg.querySelector('.hidden-audio'); audioTag.addEventListener('loadedmetadata', () => { const displayTimer = divMsg.querySelector('.audio-timer-display'); if(isFinite(audioTag.duration)) { displayTimer.textContent = formatarSegundosParaTempo(audioTag.duration); displayTimer.dataset.duration = audioTag.duration; } else { displayTimer.textContent = "Áudio"; } }); }
   });
   atualizarSidebar(); chatWindow.scrollTop = chatWindow.scrollHeight; verificarBotaoDescer();
 }
@@ -104,8 +127,43 @@ function abrirConversa(chatId) {
 const btnScrollBottom = document.getElementById('btn-scroll-bottom'); chatWindow.onscroll = verificarBotaoDescer;
 function verificarBotaoDescer() { if (chatWindow.scrollHeight - chatWindow.scrollTop > chatWindow.clientHeight + 150) { btnScrollBottom.style.display = 'flex'; } else { btnScrollBottom.style.display = 'none'; } }
 function scrollToBottom() { chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' }); }
-function playCustomAudio(btn) { if (isSelectionMode) return; const player = btn.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const slider = player.querySelector('.audio-seek-slider'); const timerDisplay = player.querySelector('.audio-timer-display'); document.querySelectorAll('audio.hidden-audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('.play-btn').textContent = '▶'; } }); audio.ontimeupdate = () => { const percent = (audio.currentTime / audio.duration) * 100; pb.style.width = percent + '%'; slider.value = percent; timerDisplay.textContent = formatarSegundosParaTempo(audio.currentTime); }; audio.onended = () => { btn.textContent = '▶'; pb.style.width = '0%'; slider.value = 0; timerDisplay.textContent = formatarSegundosParaTempo(timerDisplay.dataset.duration); }; if (audio.paused) { audio.play(); btn.textContent = '⏸'; } else { audio.pause(); btn.textContent = '▶'; } }
-function arrastarAudio(slider) { const player = slider.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const timerDisplay = player.querySelector('.audio-timer-display'); if (audio && isFinite(audio.duration)) { const newTime = (slider.value / 100) * audio.duration; audio.currentTime = newTime; pb.style.width = slider.value + '%'; timerDisplay.textContent = formatarSegundosParaTempo(newTime); } }
+
+// LÓGICA DE REPRODUÇÃO CORRIGIDA
+function playCustomAudio(btn) {
+  if (isSelectionMode) return;
+  const player = btn.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const slider = player.querySelector('.audio-seek-slider'); const timerDisplay = player.querySelector('.audio-timer-display');
+  
+  // Resgata a duração real que guardámos no dataset
+  const duration = parseFloat(timerDisplay.dataset.duration) || 0;
+
+  document.querySelectorAll('audio.hidden-audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('.play-btn').textContent = '▶'; } }); 
+  
+  audio.ontimeupdate = () => { 
+    // Se a duração for maior que 0 usa ela, se não tenta usar a do audio
+    const currentDur = duration > 0 ? duration : (audio.duration === Infinity ? 0 : audio.duration);
+    const percent = currentDur > 0 ? (audio.currentTime / currentDur) * 100 : 0; 
+    pb.style.width = percent + '%'; 
+    slider.value = percent; 
+    timerDisplay.textContent = formatarSegundosParaTempo(audio.currentTime); 
+  };
+  
+  audio.onended = () => { 
+    btn.textContent = '▶'; pb.style.width = '0%'; slider.value = 0; 
+    timerDisplay.textContent = formatarSegundosParaTempo(duration); 
+  };
+  
+  if (audio.paused) { audio.play(); btn.textContent = '⏸'; } else { audio.pause(); btn.textContent = '▶'; } 
+}
+
+function arrastarAudio(slider) {
+  const player = slider.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const timerDisplay = player.querySelector('.audio-timer-display');
+  const duration = parseFloat(timerDisplay.dataset.duration) || 0;
+  if (audio && duration > 0) { 
+    const newTime = (slider.value / 100) * duration; 
+    audio.currentTime = newTime; pb.style.width = slider.value + '%'; timerDisplay.textContent = formatarSegundosParaTempo(newTime); 
+  } 
+}
+
 
 // =========================================================
 // 6. SELEÇÃO E EXCLUSÃO
@@ -125,32 +183,21 @@ function toggleMenu(e, id) { e.stopPropagation(); fecharMenus(); document.getEle
 // 7. EMOJIS, ANEXOS, CÂMERA E GRAVAÇÃO
 // =========================================================
 const messageInput = document.getElementById('message-input'); const btnActionMain = document.getElementById('btn-action-main'); 
-const btnAttachMenu = document.getElementById('btn-attach-menu'); const attachMenu = document.getElementById('attach-menu'); 
-const fileInput = document.getElementById('file-input');
+const btnAttachMenu = document.getElementById('btn-attach-menu'); const attachMenu = document.getElementById('attach-menu'); const fileInput = document.getElementById('file-input');
 
 btnAttachMenu.onclick = (e) => { e.stopPropagation(); attachMenu.classList.toggle('show'); emojiPicker.classList.remove('show'); };
-const emojiPicker = document.getElementById('emoji-picker'); const btnEmoji = document.getElementById('btn-emoji'); 
-const listaEmojis = ['😀','😂','🥰','😎','🤔','👍','🙏','🔥','🎉','❤️','👀','✨','🤣','🙌','💡','✅','❌','💯'];
-listaEmojis.forEach(e => { 
-  const span = document.createElement('span'); span.className = 'emoji-item'; span.textContent = e; 
-  span.onclick = () => { messageInput.value += e; messageInput.focus(); messageInput.dispatchEvent(new Event('input')); }; 
-  emojiPicker.appendChild(span); 
-});
+const emojiPicker = document.getElementById('emoji-picker'); const btnEmoji = document.getElementById('btn-emoji'); const listaEmojis = ['😀','😂','🥰','😎','🤔','👍','🙏','🔥','🎉','❤️','👀','✨','🤣','🙌','💡','✅','❌','💯'];
+listaEmojis.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.textContent = e; span.onclick = () => { messageInput.value += e; messageInput.focus(); messageInput.dispatchEvent(new Event('input')); }; emojiPicker.appendChild(span); });
 btnEmoji.onclick = (e) => { e.stopPropagation(); emojiPicker.classList.toggle('show'); attachMenu.classList.remove('show'); }; 
-
-// Fecha menus ao clicar fora
-document.addEventListener('click', (e) => { 
-  if (!emojiPicker.contains(e.target) && !btnEmoji.contains(e.target)) emojiPicker.classList.remove('show'); 
-  if (!attachMenu.contains(e.target) && !btnAttachMenu.contains(e.target)) attachMenu.classList.remove('show'); 
-});
+document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && !btnEmoji.contains(e.target)) emojiPicker.classList.remove('show'); if (!attachMenu.contains(e.target) && !btnAttachMenu.contains(e.target)) attachMenu.classList.remove('show'); });
 
 function formatarHora() { const a = new Date(); return a.getHours().toString().padStart(2, '0') + ':' + a.getMinutes().toString().padStart(2, '0'); }
 
 messageInput.addEventListener('input', () => { if (messageInput.value.trim() !== '') { btnActionMain.innerHTML = SVG_SEND; btnActionMain.onclick = sendMessage; } else { btnActionMain.innerHTML = SVG_MIC; btnActionMain.onclick = iniciarGravacao; } });
 function processarEnvioMensagem(objMensagem) { chatsData[activeChatId].messages.push(objMensagem); salvarDados(); abrirConversa(activeChatId); playSound('sent'); setTimeout(() => { const msgIndex = chatsData[activeChatId].messages.findIndex(m => m.id === objMensagem.id); if (msgIndex !== -1) { chatsData[activeChatId].messages[msgIndex].status = 'delivered'; salvarDados(); if(activeChatId === activeChatId) abrirConversa(activeChatId); } }, 1000); setTimeout(() => { const msgIndex = chatsData[activeChatId].messages.findIndex(m => m.id === objMensagem.id); if (msgIndex !== -1) { chatsData[activeChatId].messages[msgIndex].status = 'read'; salvarDados(); if(activeChatId === activeChatId) abrirConversa(activeChatId); } }, 2500); }
-function sendMessage() { const text = messageInput.value.trim(); if (text === '') return; processarEnvioMensagem({ id: Date.now(), text: text, time: formatarHora(), type: 'sent', isImage: false, isVideo: false, isAudio: false, deleted: false, status: 'sent' }); messageInput.value = ''; btnActionMain.innerHTML = SVG_MIC; btnActionMain.onclick = iniciarGravacao; emojiPicker.classList.remove('show'); attachMenu.classList.remove('show');}
+function sendMessage() { const text = messageInput.value.trim(); if (text === '') return; processarEnvioMensagem({ id: Date.now(), text: text, time: formatarHora(), type: 'sent', isImage: false, isVideo: false, isAudio: false, deleted: false, status: 'sent', audioDuration: 0 }); messageInput.value = ''; btnActionMain.innerHTML = SVG_MIC; btnActionMain.onclick = iniciarGravacao; emojiPicker.classList.remove('show'); attachMenu.classList.remove('show');}
 messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-fileInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 2.5 * 1024 * 1024) { alert("Limite de 2.5 MB."); fileInput.value = ''; return; } const isVideoFile = file.type.startsWith('video/'); const reader = new FileReader(); reader.onload = function(evt) { processarEnvioMensagem({ id: Date.now(), text: evt.target.result, time: formatarHora(), type: 'sent', isImage: !isVideoFile, isVideo: isVideoFile, isAudio: false, deleted: false, status: 'sent' }); }; reader.readAsDataURL(file); fileInput.value = ''; attachMenu.classList.remove('show');});
+fileInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 2.5 * 1024 * 1024) { alert("Limite de 2.5 MB."); fileInput.value = ''; return; } const isVideoFile = file.type.startsWith('video/'); const reader = new FileReader(); reader.onload = function(evt) { processarEnvioMensagem({ id: Date.now(), text: evt.target.result, time: formatarHora(), type: 'sent', isImage: !isVideoFile, isVideo: isVideoFile, isAudio: false, deleted: false, status: 'sent', audioDuration: 0 }); }; reader.readAsDataURL(file); fileInput.value = ''; attachMenu.classList.remove('show');});
 
 // CAMERA AO VIVO
 const cameraModal = document.getElementById('camera-modal'); const cameraStream = document.getElementById('camera-stream'); const cameraCanvas = document.getElementById('camera-canvas'); const cameraPreview = document.getElementById('camera-preview'); const btnTakePhoto = document.getElementById('btn-take-photo'); const btnRetakePhoto = document.getElementById('btn-retake-photo'); const btnSendPhoto = document.getElementById('btn-send-photo'); let streamAtual = null;
@@ -158,31 +205,45 @@ async function abrirCamera() { attachMenu.classList.remove('show'); try { const 
 function fecharCamera() { cameraModal.classList.remove('show'); setTimeout(() => { cameraModal.style.display = 'none'; if (streamAtual) { streamAtual.getTracks().forEach(track => track.stop()); streamAtual = null; } }, 300); }
 btnTakePhoto.onclick = () => { cameraCanvas.width = cameraStream.videoWidth; cameraCanvas.height = cameraStream.videoHeight; cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0); const imageBase64 = cameraCanvas.toDataURL('image/jpeg'); cameraPreview.src = imageBase64; cameraStream.style.display = 'none'; btnTakePhoto.style.display = 'none'; cameraPreview.style.display = 'block'; btnRetakePhoto.style.display = 'block'; btnSendPhoto.style.display = 'flex'; };
 btnRetakePhoto.onclick = () => { cameraStream.style.display = 'block'; btnTakePhoto.style.display = 'block'; cameraPreview.style.display = 'none'; btnRetakePhoto.style.display = 'none'; btnSendPhoto.style.display = 'none'; };
-btnSendPhoto.onclick = () => { const imageBase64 = cameraPreview.src; processarEnvioMensagem({ id: Date.now(), text: imageBase64, time: formatarHora(), type: 'sent', isImage: true, isVideo: false, isAudio: false, deleted: false, status: 'sent' }); fecharCamera(); };
+btnSendPhoto.onclick = () => { const imageBase64 = cameraPreview.src; processarEnvioMensagem({ id: Date.now(), text: imageBase64, time: formatarHora(), type: 'sent', isImage: true, isVideo: false, isAudio: false, deleted: false, status: 'sent', audioDuration: 0 }); fecharCamera(); };
 
-// GRAVAÇÃO ÁUDIO
+// GRAVAÇÃO ÁUDIO COM TRAVA DE SEGURANÇA E DURAÇÃO REAL
 const recordingControls = document.getElementById('recording-controls'); const recordingTime = document.getElementById('recording-time'); const btnCancelMic = document.getElementById('btn-cancel-mic');
-let mediaRecorder; let audioChunks = []; let recTimer; let recSeconds = 0; let gravarParaEnviar = true; 
+let mediaRecorder; let audioChunks = []; let recTimer; let recSeconds = 0; let gravarParaEnviar = true; let isRequestingMic = false;
+
 async function iniciarGravacao() {
-  if(messageInput.value.trim() !== '') return; 
+  if(messageInput.value.trim() !== '' || isRequestingMic) return; 
+  isRequestingMic = true;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRecorder = new MediaRecorder(stream); audioChunks = []; gravarParaEnviar = true; 
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+    isRequestingMic = false;
+    if (recTimer) clearInterval(recTimer);
+    
+    mediaRecorder = new MediaRecorder(stream); audioChunks = []; gravarParaEnviar = true; 
     messageInput.style.display = 'none'; btnAttachMenu.style.display = 'none'; btnEmoji.style.display = 'none'; 
     document.querySelector('.footer-right').classList.add('recording-mode');
     btnActionMain.classList.add('recording-active'); btnActionMain.innerHTML = SVG_SEND;
+    
     recordingControls.classList.add('show'); recSeconds = 0; recordingTime.textContent = '00:00';
     recTimer = setInterval(() => { recSeconds++; recordingTime.textContent = formatarSegundosParaTempo(recSeconds); }, 1000);
+    
     mediaRecorder.ondataavailable = e => { audioChunks.push(e.data); };
     mediaRecorder.onstop = () => {
-      clearInterval(recTimer); resetMicUI();
+      clearInterval(recTimer); recTimer = null; resetMicUI();
       if (gravarParaEnviar && audioChunks.length > 0) { 
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); const reader = new FileReader();
-        reader.onload = function(event) { processarEnvioMensagem({ id: Date.now(), text: event.target.result, time: formatarHora(), type: 'sent', isImage: false, isVideo: false, isAudio: true, deleted: false, status: 'sent' }); }; reader.readAsDataURL(audioBlob);
+        reader.onload = function(event) { 
+          // AQUI SALVAMOS A DURAÇÃO REAL (recSeconds) DIRETAMENTE NA MENSAGEM
+          processarEnvioMensagem({ id: Date.now(), text: event.target.result, time: formatarHora(), type: 'sent', isImage: false, isVideo: false, isAudio: true, deleted: false, status: 'sent', audioDuration: recSeconds }); 
+        }; 
+        reader.readAsDataURL(audioBlob);
       } stream.getTracks().forEach(t => t.stop()); 
-    }; mediaRecorder.start(); btnActionMain.onclick = function() { if (mediaRecorder.state === 'recording') { gravarParaEnviar = true; mediaRecorder.stop(); } };
-  } catch (err) { alert("Permita o uso do microfone."); }
+    }; 
+    mediaRecorder.start(); 
+    btnActionMain.onclick = function() { if (mediaRecorder.state === 'recording') { gravarParaEnviar = true; mediaRecorder.stop(); } };
+  } catch (err) { isRequestingMic = false; alert("Permita o uso do microfone."); }
 }
-btnActionMain.onclick = iniciarGravacao; btnCancelMic.addEventListener('click', () => { if (mediaRecorder && mediaRecorder.state === 'recording') { gravarParaEnviar = false; mediaRecorder.stop(); } });
+btnCancelMic.addEventListener('click', () => { if (mediaRecorder && mediaRecorder.state === 'recording') { gravarParaEnviar = false; mediaRecorder.stop(); } });
 function resetMicUI() { messageInput.style.display = 'block'; btnAttachMenu.style.display = 'flex'; btnEmoji.style.display = 'flex'; document.querySelector('.footer-right').classList.remove('recording-mode'); btnActionMain.classList.remove('recording-active'); btnActionMain.innerHTML = SVG_MIC; recordingControls.classList.remove('show'); btnActionMain.onclick = iniciarGravacao; }
 
 // =========================================================
@@ -206,7 +267,7 @@ document.getElementById('btn-simular-externa').addEventListener('click', () => {
   if (activeChatId === "chat_joao") { document.getElementById('header-status').textContent = 'digitando...'; document.getElementById('header-status').style.display = 'block'; }
   setTimeout(() => {
     chatsData["chat_joao"].isTyping = false; chatsData["chat_joao"].archived = false; 
-    chatsData["chat_joao"].messages.push({ id: Date.now(), text: "Essa simulação ficou muito real!", time: formatarHora(), type: 'received', isImage: false, isVideo: false, isAudio: false, deleted: false }); salvarDados(); 
+    chatsData["chat_joao"].messages.push({ id: Date.now(), text: "Essa simulação ficou muito real!", time: formatarHora(), type: 'received', isImage: false, isVideo: false, isAudio: false, deleted: false, audioDuration: 0 }); salvarDados(); 
     if (activeChatId === "chat_joao") abrirConversa(activeChatId); else atualizarSidebar(); 
     showNotification("João Pedro", "Essa simulação ficou muito real!"); 
   }, 2000);
