@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Clone WhatsApp - Completo</title>
+  <title>Clone WhatsApp - V20 Estável</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
 </head>
 <body class="theme-dark">
 
@@ -47,16 +46,14 @@
 
   <div class="app-container">
     <div class="sidebar-wrapper">
-      
-      <!-- Gaveta Perfil -->
       <div id="my-profile-drawer" class="drawer left-drawer">
-        <header class="drawer-header"><button class="btn-icon" onclick="fecharMeuPerfil()"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 4l1.4 1.4L7.8 11H20v2H7.8l5.6 5.6L12 20l-8-8 8-8z"></path></svg></button><h2>Perfil</h2></header>
+        <header class="drawer-header"><button class="btn-icon" onclick="fecharMeuPerfil()">⬅</button><h2>Perfil</h2></header>
         <div class="drawer-body">
           <div class="profile-big-avatar-container">
             <div class="profile-big-avatar" id="my-profile-avatar">Eu</div>
             <div class="avatar-overlay">
-              <div class="overlay-action" onclick="visualizarMinhaFoto(event)"><span style="font-size: 20px;">👁️</span><span>VER</span></div>
-              <div class="overlay-action" onclick="document.getElementById('my-avatar-input').click(); event.stopPropagation();"><span style="font-size: 20px;">📷</span><span>MUDAR</span></div>
+              <div class="overlay-action" onclick="visualizarMinhaFoto(event)"><span>👁️</span><span>VER</span></div>
+              <div class="overlay-action" onclick="document.getElementById('my-avatar-input').click(); event.stopPropagation();"><span>📷</span><span>MUDAR</span></div>
             </div>
             <input type="file" id="my-avatar-input" accept="image/*" style="display: none;">
           </div>
@@ -64,7 +61,6 @@
             <label>Seu nome</label>
             <div class="editable-row"><div class="profile-text" id="my-name-display">Administrador</div><input type="text" id="my-name-input" class="profile-edit-input" style="display:none;" maxlength="25"><button class="btn-icon edit-btn" id="btn-edit-name" onclick="iniciarEdicao('name')">✎</button><button class="btn-icon save-btn" id="btn-save-name" style="display:none;" onclick="salvarEdicao('name')">✔</button></div>
           </div>
-          <div class="profile-info-desc">Esse nome será visível para seus contatos.</div>
           <div class="profile-info-block">
             <label>Recado</label>
             <div class="editable-row"><div class="profile-text" id="my-bio-display">Disponível</div><input type="text" id="my-bio-input" class="profile-edit-input" style="display:none;" maxlength="139"><button class="btn-icon edit-btn" id="btn-edit-bio" onclick="iniciarEdicao('bio')">✎</button><button class="btn-icon save-btn" id="btn-save-bio" style="display:none;" onclick="salvarEdicao('bio')">✔</button></div>
@@ -73,7 +69,7 @@
       </div>
 
       <div id="archived-drawer" class="drawer left-drawer">
-        <header class="drawer-header"><button class="btn-icon" onclick="fecharArquivadas()"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 4l1.4 1.4L7.8 11H20v2H7.8l5.6 5.6L12 20l-8-8 8-8z"></path></svg></button><h2>Arquivadas</h2></header>
+        <header class="drawer-header"><button class="btn-icon" onclick="fecharArquivadas()">⬅</button><h2>Arquivadas</h2></header>
         <div class="chat-list" id="archived-list"></div>
       </div>
 
@@ -119,6 +115,7 @@
         <input type="text" id="message-input" placeholder="Mensagem" autocomplete="off">
         
         <div class="footer-right">
+          <!-- AQUI ESTAVA O ERRO DO INLINE STYLE: APAGADO -->
           <div id="recording-controls">
              <button id="btn-cancel-mic" class="btn-icon" style="color: #f15c6d;"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19.8 5.8l-1.6-1.6-6.2 6.2-6.2-6.2-1.6 1.6 6.2 6.2-6.2 6.2 1.6 1.6 6.2-6.2 6.2 6.2 1.6-1.6-6.2-6.2 6.2-6.2z"></path></svg></button>
              <div style="display: flex; align-items: center; gap: 8px;"><div class="red-dot"></div><span id="recording-time" class="recording-timer">00:00</span></div>
@@ -128,7 +125,7 @@
       </footer>
 
       <div id="contact-profile-drawer" class="drawer right-drawer">
-        <header class="drawer-header"><button class="btn-icon" onclick="fecharPerfilContato()"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19.8 5.8l-1.6-1.6-6.2 6.2-6.2-6.2-1.6 1.6 6.2 6.2-6.2 6.2 1.6 1.6 6.2-6.2 6.2 6.2 1.6-1.6-6.2-6.2 6.2-6.2z"></path></svg></button><h2>Dados do contato</h2></header>
+        <header class="drawer-header"><button class="btn-icon" onclick="fecharPerfilContato()">✖</button><h2>Dados do contato</h2></header>
         <div class="drawer-body">
           <div class="profile-big-avatar" id="contact-big-avatar"></div>
           <h2 class="contact-big-name" id="contact-big-name">Nome</h2>
