@@ -7,12 +7,12 @@ const SVG_SINGLE_TICK = `<svg viewBox="0 0 16 15" width="16" height="15"><path f
 const SVG_DOUBLE_TICK = `<svg viewBox="0 0 16 15" width="16" height="15"><path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.318.318 0 0 0 .036.408l1.51 1.369c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"></path><path fill="currentColor" d="M9.663 3.116l-.478-.372a.365.365 0 0 0-.51.063L3.319 9.679a.32.32 0 0 1-.484.033L.645 7.569a.366.366 0 0 0-.515.006L.2 8.008a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"></path></svg>`;
 
 // =========================================================
-// 1. DADOS (V13 - Com suporte a duração do áudio)
+// 1. DADOS
 // =========================================================
 let chatsData = {}; let myProfile = {}; let activeChatId = "chat_maria"; 
 
 function carregarDados() {
-  const dadosSalvos = localStorage.getItem('whatsapp_clone_data_v13'); 
+  const dadosSalvos = localStorage.getItem('whatsapp_clone_data_v15'); 
   if (dadosSalvos) {
     const dataObj = JSON.parse(dadosSalvos); chatsData = dataObj.chats; myProfile = dataObj.profile;
   } else {
@@ -24,8 +24,7 @@ function carregarDados() {
   }
   mudarTema(myProfile.theme || 'dark');
 }
-function salvarDados() { localStorage.setItem('whatsapp_clone_data_v13', JSON.stringify({ chats: chatsData, profile: myProfile })); }
-
+function salvarDados() { localStorage.setItem('whatsapp_clone_data_v15', JSON.stringify({ chats: chatsData, profile: myProfile })); }
 function abrirModalTema() { document.getElementById("theme-modal").style.display = "flex"; setTimeout(() => document.getElementById("theme-modal").classList.add("show"), 10); }
 function fecharModalTema() { document.getElementById("theme-modal").classList.remove("show"); setTimeout(() => document.getElementById("theme-modal").style.display = "none", 300); }
 function mudarTema(themeName) { document.body.className = `theme-${themeName}`; myProfile.theme = themeName; salvarDados(); }
@@ -71,7 +70,6 @@ document.getElementById('chat-header').innerHTML = `<div class="chat-header-info
 function voltarParaLista() { document.querySelector('.sidebar-wrapper').classList.remove('hide-mobile'); }
 window.addEventListener('resize', () => { if(window.innerWidth > 768) { document.querySelector('.sidebar-wrapper').classList.remove('hide-mobile'); document.getElementById('btn-back-mobile').style.display = 'none'; } else { document.getElementById('btn-back-mobile').style.display = 'block'; } });
 
-
 // =========================================================
 // 4. RENDERIZAÇÃO DO CHAT
 // =========================================================
@@ -111,7 +109,6 @@ function abrirConversa(chatId) {
                 </div>
              </div>
              <div class="audio-bottom-row">
-                <!-- AQUI ESTÁ A CORREÇÃO: injetamos a duração real na tag -->
                 <span class="audio-timer-display" data-duration="${duracao}">${displayTempoInicial}</span>
                 <div class="message-time-block"><span class="time" style="margin:0;">${msg.time}</span>${tickHTML}</div>
              </div>
@@ -128,29 +125,21 @@ const btnScrollBottom = document.getElementById('btn-scroll-bottom'); chatWindow
 function verificarBotaoDescer() { if (chatWindow.scrollHeight - chatWindow.scrollTop > chatWindow.clientHeight + 150) { btnScrollBottom.style.display = 'flex'; } else { btnScrollBottom.style.display = 'none'; } }
 function scrollToBottom() { chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' }); }
 
-// LÓGICA DE REPRODUÇÃO CORRIGIDA
 function playCustomAudio(btn) {
   if (isSelectionMode) return;
   const player = btn.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const slider = player.querySelector('.audio-seek-slider'); const timerDisplay = player.querySelector('.audio-timer-display');
-  
-  // Resgata a duração real que guardámos no dataset
   const duration = parseFloat(timerDisplay.dataset.duration) || 0;
 
   document.querySelectorAll('audio.hidden-audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('.play-btn').textContent = '▶'; } }); 
   
   audio.ontimeupdate = () => { 
-    // Se a duração for maior que 0 usa ela, se não tenta usar a do audio
     const currentDur = duration > 0 ? duration : (audio.duration === Infinity ? 0 : audio.duration);
     const percent = currentDur > 0 ? (audio.currentTime / currentDur) * 100 : 0; 
-    pb.style.width = percent + '%'; 
-    slider.value = percent; 
+    pb.style.width = percent + '%'; slider.value = percent; 
     timerDisplay.textContent = formatarSegundosParaTempo(audio.currentTime); 
   };
   
-  audio.onended = () => { 
-    btn.textContent = '▶'; pb.style.width = '0%'; slider.value = 0; 
-    timerDisplay.textContent = formatarSegundosParaTempo(duration); 
-  };
+  audio.onended = () => { btn.textContent = '▶'; pb.style.width = '0%'; slider.value = 0; timerDisplay.textContent = formatarSegundosParaTempo(duration); };
   
   if (audio.paused) { audio.play(); btn.textContent = '⏸'; } else { audio.pause(); btn.textContent = '▶'; } 
 }
@@ -158,12 +147,8 @@ function playCustomAudio(btn) {
 function arrastarAudio(slider) {
   const player = slider.closest('.custom-audio-player'); const audio = player.querySelector('.hidden-audio'); const pb = player.querySelector('.audio-progress-bar'); const timerDisplay = player.querySelector('.audio-timer-display');
   const duration = parseFloat(timerDisplay.dataset.duration) || 0;
-  if (audio && duration > 0) { 
-    const newTime = (slider.value / 100) * duration; 
-    audio.currentTime = newTime; pb.style.width = slider.value + '%'; timerDisplay.textContent = formatarSegundosParaTempo(newTime); 
-  } 
+  if (audio && duration > 0) { const newTime = (slider.value / 100) * duration; audio.currentTime = newTime; pb.style.width = slider.value + '%'; timerDisplay.textContent = formatarSegundosParaTempo(newTime); } 
 }
-
 
 // =========================================================
 // 6. SELEÇÃO E EXCLUSÃO
@@ -178,13 +163,11 @@ function processarExclusao(arrayIds) { backupMensagensApagadas = []; arrayIds.fo
 document.getElementById('btn-undo').addEventListener('click', () => { if (backupMensagensApagadas.length > 0) { backupMensagensApagadas.forEach(backup => { const msgIndex = chatsData[backup.chatId].messages.findIndex(m => m.id === backup.id); if(msgIndex !== -1) chatsData[backup.chatId].messages[msgIndex].deleted = false; }); salvarDados(); abrirConversa(activeChatId); snackbar.classList.remove('show'); clearTimeout(undoTimeout); backupMensagensApagadas = []; } });
 function toggleMenu(e, id) { e.stopPropagation(); fecharMenus(); document.getElementById(id).classList.add('show'); } function fecharMenus() { document.querySelectorAll('.msg-dropdown').forEach(m => m.classList.remove('show')); }
 
-
 // =========================================================
-// 7. EMOJIS, ANEXOS, CÂMERA E GRAVAÇÃO
+// 7. EMOJIS E ANEXOS
 // =========================================================
 const messageInput = document.getElementById('message-input'); const btnActionMain = document.getElementById('btn-action-main'); 
 const btnAttachMenu = document.getElementById('btn-attach-menu'); const attachMenu = document.getElementById('attach-menu'); const fileInput = document.getElementById('file-input');
-
 btnAttachMenu.onclick = (e) => { e.stopPropagation(); attachMenu.classList.toggle('show'); emojiPicker.classList.remove('show'); };
 const emojiPicker = document.getElementById('emoji-picker'); const btnEmoji = document.getElementById('btn-emoji'); const listaEmojis = ['😀','😂','🥰','😎','🤔','👍','🙏','🔥','🎉','❤️','👀','✨','🤣','🙌','💡','✅','❌','💯'];
 listaEmojis.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.textContent = e; span.onclick = () => { messageInput.value += e; messageInput.focus(); messageInput.dispatchEvent(new Event('input')); }; emojiPicker.appendChild(span); });
@@ -201,53 +184,137 @@ fileInput.addEventListener('change', function(e) { const file = e.target.files[0
 
 // CAMERA AO VIVO
 const cameraModal = document.getElementById('camera-modal'); const cameraStream = document.getElementById('camera-stream'); const cameraCanvas = document.getElementById('camera-canvas'); const cameraPreview = document.getElementById('camera-preview'); const btnTakePhoto = document.getElementById('btn-take-photo'); const btnRetakePhoto = document.getElementById('btn-retake-photo'); const btnSendPhoto = document.getElementById('btn-send-photo'); let streamAtual = null;
-async function abrirCamera() { attachMenu.classList.remove('show'); try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); streamAtual = stream; cameraStream.srcObject = stream; cameraModal.style.display = 'flex'; setTimeout(() => cameraModal.classList.add('show'), 10); cameraStream.style.display = 'block'; btnTakePhoto.style.display = 'block'; cameraPreview.style.display = 'none'; btnRetakePhoto.style.display = 'none'; btnSendPhoto.style.display = 'none'; } catch (err) { alert("Não foi possível acessar a câmera."); } }
+async function abrirCamera() { attachMenu.classList.remove('show'); try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); streamAtual = stream; cameraStream.srcObject = stream; cameraModal.style.display = 'flex'; setTimeout(() => cameraModal.classList.add('show'), 10); cameraStream.style.display = 'block'; btnTakePhoto.style.display = 'block'; cameraPreview.style.display = 'none'; btnRetakePhoto.style.display = 'none'; btnSendPhoto.style.display = 'none'; } catch (err) { alert("Não foi possível aceder à câmara."); } }
 function fecharCamera() { cameraModal.classList.remove('show'); setTimeout(() => { cameraModal.style.display = 'none'; if (streamAtual) { streamAtual.getTracks().forEach(track => track.stop()); streamAtual = null; } }, 300); }
 btnTakePhoto.onclick = () => { cameraCanvas.width = cameraStream.videoWidth; cameraCanvas.height = cameraStream.videoHeight; cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0); const imageBase64 = cameraCanvas.toDataURL('image/jpeg'); cameraPreview.src = imageBase64; cameraStream.style.display = 'none'; btnTakePhoto.style.display = 'none'; cameraPreview.style.display = 'block'; btnRetakePhoto.style.display = 'block'; btnSendPhoto.style.display = 'flex'; };
 btnRetakePhoto.onclick = () => { cameraStream.style.display = 'block'; btnTakePhoto.style.display = 'block'; cameraPreview.style.display = 'none'; btnRetakePhoto.style.display = 'none'; btnSendPhoto.style.display = 'none'; };
 btnSendPhoto.onclick = () => { const imageBase64 = cameraPreview.src; processarEnvioMensagem({ id: Date.now(), text: imageBase64, time: formatarHora(), type: 'sent', isImage: true, isVideo: false, isAudio: false, deleted: false, status: 'sent', audioDuration: 0 }); fecharCamera(); };
 
-// GRAVAÇÃO ÁUDIO COM TRAVA DE SEGURANÇA E DURAÇÃO REAL
-const recordingControls = document.getElementById('recording-controls'); const recordingTime = document.getElementById('recording-time'); const btnCancelMic = document.getElementById('btn-cancel-mic');
-let mediaRecorder; let audioChunks = []; let recTimer; let recSeconds = 0; let gravarParaEnviar = true; let isRequestingMic = false;
+// =========================================================
+// GRAVAÇÃO DE ÁUDIO À PROVA DE FALHAS
+// =========================================================
+const recordingControls = document.getElementById('recording-controls'); 
+const recordingTime = document.getElementById('recording-time'); 
+const btnCancelMic = document.getElementById('btn-cancel-mic');
+
+let mediaRecorder = null; 
+let audioChunks = []; 
+let recTimer = null; 
+let recSeconds = 0; 
+let gravarParaEnviar = true; 
+let isRequestingMic = false;
 
 async function iniciarGravacao() {
   if(messageInput.value.trim() !== '' || isRequestingMic) return; 
+  
   isRequestingMic = true;
+  gravarParaEnviar = true; // CORREÇÃO: Variável é limpa AQUI ANTES de pedir a permissão
+  
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
     isRequestingMic = false;
+    
+    // Se o utilizador clicou no "X" ENQUANTO a permissão carregava, paramos imediatamente.
+    if (!gravarParaEnviar) {
+      stream.getTracks().forEach(t => t.stop());
+      resetMicUI();
+      return;
+    }
+
     if (recTimer) clearInterval(recTimer);
     
-    mediaRecorder = new MediaRecorder(stream); audioChunks = []; gravarParaEnviar = true; 
-    messageInput.style.display = 'none'; btnAttachMenu.style.display = 'none'; btnEmoji.style.display = 'none'; 
+    mediaRecorder = new MediaRecorder(stream); 
+    audioChunks = []; 
+    recSeconds = 0;
+    
+    messageInput.style.display = 'none'; 
+    btnAttachMenu.style.display = 'none'; 
+    btnEmoji.style.display = 'none'; 
     document.querySelector('.footer-right').classList.add('recording-mode');
-    btnActionMain.classList.add('recording-active'); btnActionMain.innerHTML = SVG_SEND;
+    btnActionMain.classList.add('recording-active'); 
+    btnActionMain.innerHTML = SVG_SEND;
     
-    recordingControls.classList.add('show'); recSeconds = 0; recordingTime.textContent = '00:00';
-    recTimer = setInterval(() => { recSeconds++; recordingTime.textContent = formatarSegundosParaTempo(recSeconds); }, 1000);
+    recordingControls.classList.add('show'); 
+    recordingTime.textContent = '00:00';
     
-    mediaRecorder.ondataavailable = e => { audioChunks.push(e.data); };
+    recTimer = setInterval(() => { 
+      recSeconds++; 
+      recordingTime.textContent = formatarSegundosParaTempo(recSeconds); 
+    }, 1000);
+    
+    mediaRecorder.ondataavailable = e => { 
+      if(e.data.size > 0) audioChunks.push(e.data); 
+    };
+    
     mediaRecorder.onstop = () => {
-      clearInterval(recTimer); recTimer = null; resetMicUI();
+      clearInterval(recTimer); 
+      recTimer = null; 
+      
+      const finalDuration = recSeconds; 
+      resetMicUI();
+      
       if (gravarParaEnviar && audioChunks.length > 0) { 
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); const reader = new FileReader();
+        // Agora com Fallback para navegadores web de secretária
+        const audioMimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type: audioMimeType }); 
+        const reader = new FileReader();
+        
         reader.onload = function(event) { 
-          // AQUI SALVAMOS A DURAÇÃO REAL (recSeconds) DIRETAMENTE NA MENSAGEM
-          processarEnvioMensagem({ id: Date.now(), text: event.target.result, time: formatarHora(), type: 'sent', isImage: false, isVideo: false, isAudio: true, deleted: false, status: 'sent', audioDuration: recSeconds }); 
+          processarEnvioMensagem({ 
+            id: Date.now(), 
+            text: event.target.result, 
+            time: formatarHora(), 
+            type: 'sent', 
+            isImage: false, 
+            isVideo: false, 
+            isAudio: true, 
+            deleted: false, 
+            status: 'sent', 
+            audioDuration: finalDuration 
+          }); 
         }; 
         reader.readAsDataURL(audioBlob);
-      } stream.getTracks().forEach(t => t.stop()); 
+      } 
+      stream.getTracks().forEach(t => t.stop()); 
     }; 
+    
     mediaRecorder.start(); 
-    btnActionMain.onclick = function() { if (mediaRecorder.state === 'recording') { gravarParaEnviar = true; mediaRecorder.stop(); } };
-  } catch (err) { isRequestingMic = false; alert("Permita o uso do microfone."); }
+    
+    btnActionMain.onclick = function() { 
+      if (mediaRecorder && mediaRecorder.state === 'recording') { 
+        gravarParaEnviar = true; 
+        mediaRecorder.stop(); 
+      } 
+    };
+  } catch (err) { 
+    isRequestingMic = false; 
+    resetMicUI();
+    alert("Não foi possível aceder ao microfone. Verifique as permissões do seu navegador web."); 
+  }
 }
-btnCancelMic.addEventListener('click', () => { if (mediaRecorder && mediaRecorder.state === 'recording') { gravarParaEnviar = false; mediaRecorder.stop(); } });
-function resetMicUI() { messageInput.style.display = 'block'; btnAttachMenu.style.display = 'flex'; btnEmoji.style.display = 'flex'; document.querySelector('.footer-right').classList.remove('recording-mode'); btnActionMain.classList.remove('recording-active'); btnActionMain.innerHTML = SVG_MIC; recordingControls.classList.remove('show'); btnActionMain.onclick = iniciarGravacao; }
+
+btnCancelMic.addEventListener('click', () => { 
+  gravarParaEnviar = false; // Apenas dizemos que NÃO é para enviar
+  if (mediaRecorder && mediaRecorder.state === 'recording') { 
+    mediaRecorder.stop(); 
+  } else {
+    resetMicUI();
+  }
+});
+
+function resetMicUI() { 
+  messageInput.style.display = 'block'; 
+  btnAttachMenu.style.display = 'flex'; 
+  btnEmoji.style.display = 'flex'; 
+  document.querySelector('.footer-right').classList.remove('recording-mode'); 
+  btnActionMain.classList.remove('recording-active'); 
+  btnActionMain.innerHTML = SVG_MIC; 
+  recordingControls.classList.remove('show'); 
+  btnActionMain.onclick = iniciarGravacao; 
+}
 
 // =========================================================
-// 8. PERFIS, MODAL E SIMULADOR DIGITANDO
+// 8. SIMULADOR E INICIALIZAÇÃO
 // =========================================================
 const myProfileDrawer = document.getElementById('my-profile-drawer'); const contactDrawer = document.getElementById('contact-profile-drawer'); const archivedDrawer = document.getElementById('archived-drawer');
 function abrirMeuPerfil() { myProfileDrawer.classList.add('open'); } function fecharMeuPerfil() { myProfileDrawer.classList.remove('open'); } function abrirArquivadas() { archivedDrawer.classList.add('open'); } function fecharArquivadas() { archivedDrawer.classList.remove('open'); }
