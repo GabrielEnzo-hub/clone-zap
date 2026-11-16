@@ -1,15 +1,32 @@
 {
-  "name": "Clone WhatsApp",
+  "name": "CloneZap - WhatsApp Clone",
   "short_name": "CloneZap",
+  "description": "Clone interativo do WhatsApp com suporte a áudio, câmera, temas e funcionamento offline.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#111b21",
   "theme_color": "#202c33",
+  "categories": ["social", "communication"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%2300a884' d='M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z'/%3E%3C/svg%3E",
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

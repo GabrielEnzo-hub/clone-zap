@@ -2,15 +2,24 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Clone WhatsApp - V20 Estável</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#202c33" id="meta-theme-color">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CloneZap">
+  <meta name="description" content="Clone interativo do WhatsApp em formato de aplicativo (PWA)">
+  <title>CloneZap</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-dark">
 
   <!-- CÂMERA MODAL -->
   <div id="camera-modal" class="modal">
-    <div class="camera-toolbar"><button class="btn-icon" onclick="fecharCamera()">✖</button></div>
+    <div class="camera-toolbar"><button class="btn-icon" id="btn-close-camera">✖</button></div>
     <div class="camera-body">
       <video id="camera-stream" autoplay playsinline></video>
       <canvas id="camera-canvas" style="display: none;"></canvas>
@@ -38,6 +47,26 @@
         <div class="theme-circle" style="background: #000000; border-color: #00ff00;" onclick="mudarTema('hacker')"></div>
       </div>
       <button class="btn-send" style="margin-top: 25px; width: 100%; border-radius: 8px;" onclick="fecharModalTema()">Fechar</button>
+    </div>
+  </div>
+
+  <div id="install-modal" class="modal">
+    <div class="theme-box fade-in-content" style="max-width: 380px; text-align: left;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <img src="icon.svg" alt="CloneZap" style="width: 48px; height: 48px; border-radius: 12px;">
+        <div>
+          <h2 style="color: var(--text-primary); font-size: 18px; font-weight: 600;">Instalar CloneZap</h2>
+          <span style="color: var(--text-secondary); font-size: 13px;">App rápido e funciona offline</span>
+        </div>
+      </div>
+      <div id="install-modal-instructions" style="color: var(--text-primary); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+        <p style="margin-bottom: 10px;"><strong>📱 No Android / Chrome / Edge:</strong><br>Clique no menu do navegador (⋮) e selecione <b>"Instalar aplicativo"</b> ou <b>"Adicionar à tela inicial"</b>.</p>
+        <p><strong>🍏 No iPhone (Safari):</strong><br>Toque em <b>Compartilhar</b> (ícone de seta para cima) e depois em <b>"Adicionar à Tela de Início"</b>.</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button id="btn-confirm-install" class="btn-send" style="display: none; flex: 1; border-radius: 8px;" onclick="confirmarInstalacaoNativa()">Instalar Agora</button>
+        <button class="btn-send" style="flex: 1; border-radius: 8px; background-color: var(--input-bg); color: var(--text-primary);" onclick="fecharModalInstalar()">Fechar</button>
+      </div>
     </div>
   </div>
 
@@ -76,7 +105,11 @@
       <aside class="sidebar">
         <header class="header">
           <div class="avatar" id="sidebar-my-avatar" style="cursor: pointer;" onclick="abrirMeuPerfil()">Eu</div>
-          <div style="display: flex; gap: 10px;"><button class="btn-icon" onclick="abrirModalTema()">🎨</button><button id="btn-simular-externa" class="btn-icon">🔔</button></div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btn-install-pwa" class="btn-install-pill" onclick="clicarInstalarApp()" title="Instalar aplicativo">📲 Instalar</button>
+            <button class="btn-icon" onclick="abrirModalTema()" title="Temas">🎨</button>
+            <button id="btn-simular-externa" class="btn-icon" title="Simular mensagem recebida">🔔</button>
+          </div>
         </header>
         <div id="btn-show-archived" class="archived-header-btn" onclick="abrirArquivadas()" style="display: none;"><span>📦 Arquivadas</span><span id="archived-count" class="archived-count">0</span></div>
         <div class="chat-list" id="sidebar-list"></div>
@@ -84,8 +117,12 @@
     </div>
 
     <main class="chat-area">
+      <!-- CABEÇALHO DO CHAT AGORA COM O BOTÃO DE VOLTAR NO MOBILE -->
       <header class="header" id="chat-header" style="cursor: pointer;" onclick="abrirPerfilContato()">
         <div class="chat-header-info">
+          <button id="btn-back-mobile" class="btn-icon" style="display:none; margin-right: 5px;" onclick="voltarParaLista(event)">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+          </button>
           <div class="avatar" id="header-avatar"></div>
           <div class="chat-header-text"><div class="chat-title" id="header-name"></div><div class="chat-subtitle" id="header-status" style="display: none;"></div></div>
         </div>
@@ -102,7 +139,8 @@
       <footer class="chat-footer">
         <div id="emoji-picker" class="emoji-picker"></div>
         <div id="attach-menu" class="attach-menu">
-           <div class="attach-item" onclick="abrirCamera()"><div class="attach-icon" style="background: #D3396D;">📷</div> <span>Câmera</span></div>
+           <!-- ID btn-open-camera ADICIONADO AQUI PARA CORRIGIR A CAMERA -->
+           <div class="attach-item" id="btn-open-camera"><div class="attach-icon" style="background: #D3396D;">📷</div> <span>Câmera</span></div>
            <div class="attach-item" onclick="document.getElementById('file-input').click()"><div class="attach-icon" style="background: #BF59CF;">🖼️</div> <span>Fotos/Vídeos</span></div>
         </div>
 
@@ -115,7 +153,6 @@
         <input type="text" id="message-input" placeholder="Mensagem" autocomplete="off">
         
         <div class="footer-right">
-          <!-- AQUI ESTAVA O ERRO DO INLINE STYLE: APAGADO -->
           <div id="recording-controls">
              <button id="btn-cancel-mic" class="btn-icon" style="color: #f15c6d;"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19.8 5.8l-1.6-1.6-6.2 6.2-6.2-6.2-1.6 1.6 6.2 6.2-6.2 6.2 1.6 1.6 6.2-6.2 6.2 6.2 1.6-1.6-6.2-6.2 6.2-6.2z"></path></svg></button>
              <div style="display: flex; align-items: center; gap: 8px;"><div class="red-dot"></div><span id="recording-time" class="recording-timer">00:00</span></div>

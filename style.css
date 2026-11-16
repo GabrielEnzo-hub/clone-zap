@@ -26,7 +26,8 @@ body.theme-hacker {
 }
 
 /* 100dvh garante funcionamento perfeito nos telemóveis */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; -webkit-tap-highlight-color: transparent;}
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; user-select: none; -webkit-user-select: none; }
+.message .text, .profile-text, input { user-select: text; -webkit-user-select: text; }
 ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background-color: rgba(125, 125, 125, 0.3); border-radius: 6px; } ::-webkit-scrollbar-track { background: transparent; }
 .fade-in-content { animation: fadeIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
 .drawer.open .drawer-body { animation: fadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
@@ -202,3 +203,37 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-
 .snackbar { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background-color: var(--input-bg); color: var(--text-primary); padding: 12px 24px; border-radius: 8px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: 0.3s; z-index: 1000; border: 1px solid var(--border-color);}
 .snackbar.show { bottom: 20px; }
 #btn-undo { background: none; border: none; color: var(--primary-color); font-weight: bold; cursor: pointer; font-size: 15px; }
+
+/* ESTILOS PWA E MODO STANDALONE */
+.btn-install-pill {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.btn-install-pill:hover {
+  background-color: var(--primary-hover);
+  transform: scale(1.04);
+}
+@media all and (display-mode: standalone) {
+  #btn-install-pwa {
+    display: none !important;
+  }
+  .header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    height: calc(60px + env(safe-area-inset-top, 0px));
+  }
+  .chat-footer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+  }
+}
