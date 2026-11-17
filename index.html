@@ -32,24 +32,100 @@
     </div>
   </div>
 
+  <!-- VISUALIZADOR DE MÍDIA -->
   <div id="media-modal" class="modal">
     <div class="modal-toolbar"><button class="btn-icon" onclick="zoomIn()">➕</button><button class="btn-icon" onclick="zoomOut()">➖</button><div style="width: 20px;"></div><button class="btn-icon close-modal" onclick="fecharModal()">✖</button></div>
     <div class="modal-body" id="modal-body"></div>
   </div>
 
+  <!-- MODAL DE TEMAS -->
   <div id="theme-modal" class="modal">
     <div class="theme-box fade-in-content">
       <h2 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 500;">Escolha um Tema</h2>
       <div class="theme-options">
-        <div class="theme-circle" style="background: #111b21; border-color: #00a884;" onclick="mudarTema('dark')"></div>
-        <div class="theme-circle" style="background: #eae6df; border-color: #008069;" onclick="mudarTema('light')"></div>
-        <div class="theme-circle" style="background: #282a36; border-color: #ff79c6;" onclick="mudarTema('dracula')"></div>
-        <div class="theme-circle" style="background: #000000; border-color: #00ff00;" onclick="mudarTema('hacker')"></div>
+        <div class="theme-circle" style="background: #111b21; border-color: #00a884;" onclick="mudarTema('dark')" title="Escuro Padrão"></div>
+        <div class="theme-circle" style="background: #eae6df; border-color: #008069;" onclick="mudarTema('light')" title="Claro"></div>
+        <div class="theme-circle" style="background: #282a36; border-color: #ff79c6;" onclick="mudarTema('dracula')" title="Dracula"></div>
+        <div class="theme-circle" style="background: #000000; border-color: #00ff00;" onclick="mudarTema('hacker')" title="Hacker"></div>
       </div>
       <button class="btn-send" style="margin-top: 25px; width: 100%; border-radius: 8px;" onclick="fecharModalTema()">Fechar</button>
     </div>
   </div>
 
+  <!-- MODAL NOVO CONTATO -->
+  <div id="new-contact-modal" class="modal">
+    <div class="theme-box fade-in-content" style="width: 90%; max-width: 380px; text-align: left;">
+      <h2 style="color: var(--text-primary); margin-bottom: 16px; font-weight: 500;">Nova Conversa</h2>
+      <div class="form-group">
+        <label>Nome do contato</label>
+        <input type="text" id="new-contact-name" placeholder="Ex: Ana Costa" maxlength="30">
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" id="new-contact-phone" placeholder="+55 11 99999-0000" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label>Recado / Bio</label>
+        <input type="text" id="new-contact-bio" placeholder="Disponível" maxlength="80">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-send" style="flex: 1; border-radius: 8px;" onclick="salvarNovoContato()">Criar Conversa</button>
+        <button class="btn-send" style="flex: 1; border-radius: 8px; background-color: var(--input-bg); color: var(--text-primary);" onclick="fecharModalNovoContato()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ENCAMINHAR MENSAGEM -->
+  <div id="forward-modal" class="modal">
+    <div class="theme-box fade-in-content" style="width: 90%; max-width: 360px; text-align: left;">
+      <h2 style="color: var(--text-primary); margin-bottom: 12px; font-weight: 500; font-size: 18px;">Encaminhar mensagem para...</h2>
+      <div id="forward-contact-list" class="forward-list"></div>
+      <button class="btn-send" style="margin-top: 15px; width: 100%; border-radius: 8px; background-color: var(--input-bg); color: var(--text-primary);" onclick="fecharModalEncaminhar()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE CHAMADA DE VOZ / VÍDEO -->
+  <div id="call-modal" class="modal">
+    <div class="call-box fade-in-content">
+      <div class="call-encryption">🔒 Protegida com a criptografia de ponta a ponta</div>
+      <div class="call-avatar" id="call-avatar">M</div>
+      <h2 class="call-name" id="call-name">Maria Silva</h2>
+      <div class="call-status" id="call-status">Chamando...</div>
+      <video id="call-video-preview" autoplay playsinline muted style="display: none;"></video>
+      <div class="call-actions">
+        <button class="call-btn" id="btn-call-mute" onclick="alternarMudoChamada()" title="Silenciar">🎤</button>
+        <button class="call-btn" id="btn-call-speaker" onclick="alternarVivaVoz()" title="Viva-voz">🔊</button>
+        <button class="call-btn call-btn-end" onclick="encerrarChamada()" title="Encerrar">📞</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE STATUS / STORIES -->
+  <div id="status-modal" class="modal">
+    <div class="status-viewer fade-in-content">
+      <div class="status-progress-container" id="status-progress-container"></div>
+      <div class="status-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="avatar" id="status-user-avatar">M</div>
+          <div>
+            <div id="status-user-name" style="color: #fff; font-weight: 600; font-size: 15px;">Maria Silva</div>
+            <div id="status-user-time" style="color: rgba(255,255,255,0.7); font-size: 12px;">Hoje às 14:20</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-icon" style="color: #fff;" onclick="criarMeuStatus()" title="Postar novo Status">➕</button>
+          <button class="btn-icon" style="color: #fff;" onclick="fecharModalStatus()">✖</button>
+        </div>
+      </div>
+      <div class="status-body" id="status-body" onclick="proximoStatus()"></div>
+      <div class="status-footer">
+        <input type="text" id="status-reply-input" placeholder="Responder ao status..." onclick="event.stopPropagation()">
+        <button class="btn-send" style="width: 40px; height: 40px;" onclick="responderStatus(event)">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE INSTALAÇÃO PWA -->
   <div id="install-modal" class="modal">
     <div class="theme-box fade-in-content" style="max-width: 380px; text-align: left;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -75,6 +151,7 @@
 
   <div class="app-container">
     <div class="sidebar-wrapper">
+      <!-- GAVETA: MEU PERFIL -->
       <div id="my-profile-drawer" class="drawer left-drawer">
         <header class="drawer-header"><button class="btn-icon" onclick="fecharMeuPerfil()">⬅</button><h2>Perfil</h2></header>
         <div class="drawer-body">
@@ -94,60 +171,122 @@
             <label>Recado</label>
             <div class="editable-row"><div class="profile-text" id="my-bio-display">Disponível</div><input type="text" id="my-bio-input" class="profile-edit-input" style="display:none;" maxlength="139"><button class="btn-icon edit-btn" id="btn-edit-bio" onclick="iniciarEdicao('bio')">✎</button><button class="btn-icon save-btn" id="btn-save-bio" style="display:none;" onclick="salvarEdicao('bio')">✔</button></div>
           </div>
+          <div class="profile-info-block">
+            <label>Respostas Automáticas (Bot)</label>
+            <div class="editable-row">
+              <span style="font-size: 14px; color: var(--text-secondary);">Simular respostas reais dos contatos</span>
+              <input type="checkbox" id="toggle-auto-reply" checked onchange="alternarAutoReply(this.checked)" style="width: 20px; height: 20px; accent-color: var(--primary-color); cursor: pointer;">
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- GAVETA: ARQUIVADAS -->
       <div id="archived-drawer" class="drawer left-drawer">
         <header class="drawer-header"><button class="btn-icon" onclick="fecharArquivadas()">⬅</button><h2>Arquivadas</h2></header>
         <div class="chat-list" id="archived-list"></div>
       </div>
 
+      <!-- GAVETA: MENSAGENS FAVORITAS -->
+      <div id="starred-drawer" class="drawer left-drawer">
+        <header class="drawer-header"><button class="btn-icon" onclick="fecharFavoritas()">⬅</button><h2>Mensagens favoritas</h2></header>
+        <div class="chat-list" id="starred-list"></div>
+      </div>
+
       <aside class="sidebar">
         <header class="header">
-          <div class="avatar" id="sidebar-my-avatar" style="cursor: pointer;" onclick="abrirMeuPerfil()">Eu</div>
-          <div style="display: flex; gap: 8px; align-items: center;">
+          <div class="avatar" id="sidebar-my-avatar" style="cursor: pointer;" onclick="abrirMeuPerfil()" title="Meu Perfil">Eu</div>
+          <div style="display: flex; gap: 4px; align-items: center;">
             <button id="btn-install-pwa" class="btn-install-pill" onclick="clicarInstalarApp()" title="Instalar aplicativo">📲 Instalar</button>
+            <button class="btn-icon" onclick="abrirModalStatus()" title="Status / Stories">⭕</button>
+            <button class="btn-icon" onclick="abrirModalNovoContato()" title="Nova conversa">➕</button>
+            <button class="btn-icon" onclick="abrirFavoritas()" title="Mensagens favoritas">⭐</button>
             <button class="btn-icon" onclick="abrirModalTema()" title="Temas">🎨</button>
             <button id="btn-simular-externa" class="btn-icon" title="Simular mensagem recebida">🔔</button>
           </div>
         </header>
+
+        <!-- BARRA DE PESQUISA E FILTROS -->
+        <div class="sidebar-search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="sidebar-search-input" placeholder="Pesquisar ou começar uma nova conversa" oninput="atualizarSidebar()">
+            <button id="btn-clear-search" class="btn-clear-search" style="display: none;" onclick="limparBuscaSidebar()">✖</button>
+          </div>
+          <div class="sidebar-filter-chips">
+            <button class="filter-chip active" data-filter="all" onclick="mudarFiltroSidebar('all', this)">Todas</button>
+            <button class="filter-chip" data-filter="unread" onclick="mudarFiltroSidebar('unread', this)">Não lidas</button>
+            <button class="filter-chip" data-filter="pinned" onclick="mudarFiltroSidebar('pinned', this)">Fixadas</button>
+          </div>
+        </div>
+
         <div id="btn-show-archived" class="archived-header-btn" onclick="abrirArquivadas()" style="display: none;"><span>📦 Arquivadas</span><span id="archived-count" class="archived-count">0</span></div>
         <div class="chat-list" id="sidebar-list"></div>
       </aside>
     </div>
 
     <main class="chat-area">
-      <!-- CABEÇALHO DO CHAT AGORA COM O BOTÃO DE VOLTAR NO MOBILE -->
-      <header class="header" id="chat-header" style="cursor: pointer;" onclick="abrirPerfilContato()">
-        <div class="chat-header-info">
+      <!-- CABEÇALHO DO CHAT -->
+      <header class="header" id="chat-header">
+        <div class="chat-header-info" style="cursor: pointer; flex: 1;" onclick="abrirPerfilContato()">
           <button id="btn-back-mobile" class="btn-icon" style="display:none; margin-right: 5px;" onclick="voltarParaLista(event)">
             <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
           </button>
           <div class="avatar" id="header-avatar"></div>
-          <div class="chat-header-text"><div class="chat-title" id="header-name"></div><div class="chat-subtitle" id="header-status" style="display: none;"></div></div>
+          <div class="chat-header-text">
+            <div class="chat-title" id="header-name"></div>
+            <div class="chat-subtitle" id="header-status">online</div>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="btn-icon" onclick="iniciarChamada('video')" title="Chamada de vídeo">📹</button>
+          <button class="btn-icon" onclick="iniciarChamada('voice')" title="Chamada de voz">📞</button>
+          <button class="btn-icon" onclick="alternarBuscaNoChat()" title="Pesquisar na conversa">🔍</button>
         </div>
       </header>
 
+      <!-- BARRA DE PESQUISA DENTRO DO CHAT -->
+      <div id="chat-search-bar" class="chat-search-bar" style="display: none;">
+        <input type="text" id="chat-search-input" placeholder="Pesquisar mensagens nesta conversa..." oninput="filtrarMensagensNoChat(this.value)">
+        <span id="chat-search-count" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;"></span>
+        <button class="btn-icon" onclick="alternarBuscaNoChat()">✖</button>
+      </div>
+
       <header class="header selection-header" id="selection-header">
-        <div class="selection-left"><button class="btn-icon" onclick="sairModoSelecao()">❌</button><span id="selection-count">1 selecionada</span></div><button class="btn-icon" onclick="apagarMensagensSelecionadas()">🗑️</button>
+        <div class="selection-left"><button class="btn-icon" onclick="sairModoSelecao()">❌</button><span id="selection-count">1 selecionada</span></div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-icon" onclick="favoritarMensagensSelecionadas()" title="Favoritar selecionadas">⭐</button>
+          <button class="btn-icon" onclick="apagarMensagensSelecionadas()" title="Apagar selecionadas">🗑️</button>
+        </div>
       </header>
       
       <div class="chat-window-bg"></div>
       <div class="chat-window" id="chat-window" onclick="fecharMenus()"></div>
       <button id="btn-scroll-bottom" onclick="scrollToBottom()"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 21l-8-8h5V3h6v10h5z"></path></svg></button>
 
+      <!-- BARRA DE RESPOSTA (REPLY) / EDIÇÃO ACIMA DO INPUT -->
+      <div id="reply-preview-bar" class="reply-preview-bar" style="display: none;">
+        <div class="reply-preview-content">
+          <span class="reply-preview-author" id="reply-preview-author">Maria Silva</span>
+          <span class="reply-preview-text" id="reply-preview-text">Mensagem...</span>
+        </div>
+        <button class="btn-icon" onclick="cancelarReplyOuEdicao()">✖</button>
+      </div>
+
       <footer class="chat-footer">
         <div id="emoji-picker" class="emoji-picker"></div>
         <div id="attach-menu" class="attach-menu">
-           <!-- ID btn-open-camera ADICIONADO AQUI PARA CORRIGIR A CAMERA -->
            <div class="attach-item" id="btn-open-camera"><div class="attach-icon" style="background: #D3396D;">📷</div> <span>Câmera</span></div>
-           <div class="attach-item" onclick="document.getElementById('file-input').click()"><div class="attach-icon" style="background: #BF59CF;">🖼️</div> <span>Fotos/Vídeos</span></div>
+           <div class="attach-item" onclick="document.getElementById('file-input').click()"><div class="attach-icon" style="background: #BF59CF;">🖼️</div> <span>Fotos e Vídeos</span></div>
+           <div class="attach-item" onclick="document.getElementById('doc-input').click()"><div class="attach-icon" style="background: #5157AE;">📄</div> <span>Documento</span></div>
+           <div class="attach-item" onclick="enviarLocalizacao()"><div class="attach-icon" style="background: #1FA855;">📍</div> <span>Localização</span></div>
         </div>
 
         <div class="footer-left">
           <button id="btn-attach-menu" class="btn-icon" title="Anexar"><svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M12 20.664a9.163 9.163 0 0 1-6.521-2.702.977.977 0 0 1 1.381-1.381 7.21 7.21 0 0 0 10.28 0 .978.978 0 0 1 1.381 1.381A9.164 9.164 0 0 1 12 20.664zM4.146 13.348a.976.976 0 0 1-.977-.977 8.814 8.814 0 0 1 17.628 0 .977.977 0 0 1-1.954 0 6.86 6.86 0 0 0-13.72 0 .976.976 0 0 1-.977.977zM12 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-4.047a1.047 1.047 0 1 0 0 2.094 1.047 1.047 0 0 0 0-2.094z"></path></svg></button>
           <button id="btn-emoji" class="btn-icon" title="Emojis"><svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M9.153 11.603c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962zm-3.204 1.362c-.026-.307-.131 5.218 6.063 5.551 6.066-.25 6.066-5.551 6.066-5.551-6.078 1.416-12.129 0-12.129 0zm11.3631.135h-.002c0 .001.002-.001.002 0zm-2.463-3.46c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM12 20.5c-4.687 0-8.5-3.813-8.5-8.5s3.813-8.5 8.5-8.5 8.5 3.813 8.5 8.5-3.813 8.5-8.5 8.5z"></path></svg></button>
           <input type="file" id="file-input" accept="image/*, video/*" style="display: none;">
+          <input type="file" id="doc-input" accept="*/*" style="display: none;">
         </div>
         
         <input type="text" id="message-input" placeholder="Mensagem" autocomplete="off">
@@ -167,7 +306,19 @@
           <div class="profile-big-avatar" id="contact-big-avatar"></div>
           <h2 class="contact-big-name" id="contact-big-name">Nome</h2>
           <div class="contact-big-phone" id="contact-big-phone">+55 00 00000-0000</div>
-          <div class="profile-info-block" style="margin-top: 20px;"><label>Recado</label><div class="profile-text" id="contact-big-bio">...</div></div>
+          <div style="display: flex; gap: 20px; margin: 18px 0;">
+            <button class="contact-action-btn" onclick="fecharPerfilContato(); iniciarChamada('voice')"><span>📞</span><small>Áudio</small></button>
+            <button class="contact-action-btn" onclick="fecharPerfilContato(); iniciarChamada('video')"><span>📹</span><small>Vídeo</small></button>
+            <button class="contact-action-btn" onclick="fecharPerfilContato(); alternarBuscaNoChat()"><span>🔍</span><small>Pesquisar</small></button>
+          </div>
+          <div class="profile-info-block" style="margin-top: 10px;"><label>Recado</label><div class="profile-text" id="contact-big-bio">...</div></div>
+          <div class="profile-info-block" style="margin-top: 10px;">
+            <label>Mídia, links e docs</label>
+            <div id="contact-media-grid" class="contact-media-grid"></div>
+          </div>
+          <div class="profile-info-block" style="margin-top: 10px;">
+            <button class="btn-danger-outline" onclick="limparConversaAtual()">🗑️ Limpar mensagens da conversa</button>
+          </div>
         </div>
       </div>
     </main>
